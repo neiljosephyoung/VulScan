@@ -28,3 +28,25 @@ The front-end uses **HTMX** for a responsive, interactive experience, allowing y
 
 ## Usage
 <img width="1916" height="911" alt="image" src="https://github.com/user-attachments/assets/bdf60450-d2eb-4dcb-ac3f-9a301a61b0ee" />
+## Usage
+
+1. Clone the repository:
+
+2. Build and run the Spring Boot application:
+
+3. Open your browser and go to:
+
+[http://localhost:8080](http://localhost:8080)
+
+4. Enter your **project path** and select the **model**. Click **Analyze**.
+5. Wait for the AI to process the code — results will appear in a **collapsible tree view** with detailed findings for each file.
+
+---
+
+## Tech Stack
+
+* **Backend**: Spring Boot 3.4, Java 25
+* **AI Integration**: Spring AI Client Chat (Ollama)
+* **Frontend**: HTMX + Thymeleaf
+
+---
