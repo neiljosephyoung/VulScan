@@ -4,6 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ny.vulscan.model.Finding;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
@@ -11,36 +17,15 @@ import org.springframework.ai.ollama.api.OllamaModel;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+/**
+ * ScannerServiceImpl.
+ */
 @Service
 public class ScannerServiceImpl implements ScannerService {
+  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final OllamaChatModel chatModel;
 
-    /*
-    **EXAMPLE:**
-            [
-              {
-                "path": "%s",
-                "file": "MyClass.java",
-                "line": 42,
-                "issue": "Unvalidated user input",
-                "severity": "HIGH",
-                "cve": "CVE-2021-44228",
-                "cvss": 9.8,
-                "recommendation": "Validate and sanitize all user input before using it in SQL queries."
-              }
-            ]
-     */
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final OllamaChatModel chatModel;
-
-    private static final String PROMPT_TEMPLATE = """
+  private static final String PROMPT_TEMPLATE = """
             You are a security static analysis assistant.
             Analyze the following Java code for potential security issues (OWASP Top 10, CWE).
             
@@ -64,47 +49,51 @@ public class ScannerServiceImpl implements ScannerService {
             ```
             """;
 
-    public ScannerServiceImpl(OllamaChatModel chatModel) {
-        this.chatModel = chatModel;
-    }
+  /**
+   * Wiring.
+   *
+   * @param chatModel OllamaChatModel
+   */
+  public ScannerServiceImpl(OllamaChatModel chatModel) {
+    this.chatModel = chatModel;
+  }
 
-    @Override
-    public List<HashMap<String, List<Finding>>> scanProject(Path projectDir, String model) throws IOException {
-        List<HashMap<String, List<Finding>>> allFindings = new ArrayList<>();
-        Files.walk(projectDir)
+  @Override
+  public List<HashMap<String, List<Finding>>> scanProject(Path projectDir, String model) throws IOException {
+    List<HashMap<String, List<Finding>>> allFindings = new ArrayList<>();
+    Files.walk(projectDir)
                 .filter(path -> path.toString().endsWith(".java"))
                 .forEach(path -> {
-                    var fileName = path.getName(path.getNameCount() - 1).toString();
-                    String code;
-                    try {
-                        code = Files.readString(path);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    String transformedPrompt = PROMPT_TEMPLATE.formatted(path.toString().replaceAll("\\\\", "/"), code);
+                  var fileName = path.getName(path.getNameCount() - 1).toString();
+                  String code;
+                  try {
+                    code = Files.readString(path);
+                  } catch (IOException e) {
+                    throw new RuntimeException(e);
+                  }
+                  String transformedPrompt = PROMPT_TEMPLATE.formatted(code);
 
-                    ChatResponse response = chatModel.call(
-                            new Prompt(transformedPrompt,
-                                    OllamaOptions.builder()
-                                            .model(OllamaModel.LLAMA3)
-                                            .temperature(0.1)
-                                            .build()
+                  ChatResponse response = chatModel.call(
+                          new Prompt(transformedPrompt,
+                                  OllamaOptions.builder()
+                                          .model(OllamaModel.LLAMA3)
+                                          .temperature(0.1)
+                                          .build()
                             ));
 
-                    response.getResults().forEach(result -> {
-                        try {
-                            var map = new HashMap<String, List<Finding>>();
-                            var findings = objectMapper.readValue(result.getOutput().getText(), new TypeReference<List<Finding>>() {
-                            });
-                            map.put(fileName, findings);
-                            allFindings.add(map);
-                        } catch (JsonProcessingException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-
+                  response.getResults().forEach(result -> {
+                    try {
+                      var map = new HashMap<String, List<Finding>>();
+                      var findings = objectMapper.readValue(result.getOutput().getText(),
+                                                    new TypeReference<List<Finding>>(){});
+                      map.put(fileName, findings);
+                      allFindings.add(map);
+                    } catch (JsonProcessingException e) {
+                      throw new RuntimeException(e);
+                    }
+                  });
                 });
 
-        return allFindings;
-    }
+    return allFindings;
+  }
 }

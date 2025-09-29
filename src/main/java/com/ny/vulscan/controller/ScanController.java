@@ -2,45 +2,61 @@ package com.ny.vulscan.controller;
 
 import com.ny.vulscan.ScannerService;
 import com.ny.vulscan.model.Finding;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-//@RestController
-//@RequestMapping("/scan")
+
+/**
+ * ScanController.
+ */
 @Controller
 public class ScanController {
 
-    private final ScannerService scannerService;
+  private final ScannerService scannerService;
 
-    public ScanController(ScannerService scannerService) {
-        this.scannerService = scannerService;
-    }
+  /**
+  * Wiring.
+  *
+  * @param scannerService ScannerService
+  */
+  public ScanController(ScannerService scannerService) {
+    this.scannerService = scannerService;
+  }
 
-    @GetMapping("/")
-    public String index() {
-        return "index";
-    }
+  /**
+  * index.
+  *
+  * @return String String
+  */
+  @GetMapping("/")
+  public String index() {
+    return "index";
+  }
 
-//    @PostMapping("/analyze")
-//    public List<HashMap<String, List<Finding>>> scan(@RequestParam String path, @RequestParam(defaultValue = "llama3") String model) throws Exception {
-//        return scannerService.scanProject(Path.of(path), model);
-//    }
+  /**
+  * analyze endpoint.
+  *
+  * @param path String
+  * @param model String
+  * @param uiModel Model
+  * @return String htmx templated view
+  * @throws Exception Exception
+  */
+  @PostMapping("/analyze")
+  public String analyze(@RequestParam String path,
+                        @RequestParam String model,
+                        Model uiModel) throws Exception {
 
-    @PostMapping("/analyze")
-    public String analyze(@RequestParam String path,
-                          @RequestParam String model,
-                          Model uiModel) throws Exception {
+    // Run scanner service
+    List<HashMap<String, List<Finding>>> results = scannerService.scanProject(Paths.get(path), model);
+    uiModel.addAttribute("results", results);
 
-        // Run scanner service
-        List<HashMap<String, List<Finding>>> results = scannerService.scanProject(Paths.get(path), model);
-        uiModel.addAttribute("results", results);
-
-        return "results :: resultFragment"; // return HTMX fragment
-    }
+    return "results :: resultFragment"; // return HTMX fragment
+  }
 }

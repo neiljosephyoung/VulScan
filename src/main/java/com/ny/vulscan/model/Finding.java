@@ -1,7 +1,18 @@
 package com.ny.vulscan.model;
 
-import java.util.Map;
 
+/**
+ * Finding.
+ *
+ * @param path String
+ * @param file String
+ * @param line Integer
+ * @param issue String
+ * @param cve String
+ * @param cvss Double
+ * @param severity String
+ * @param recommendation String
+ */
 public record Finding(
         String path,
         String file,
