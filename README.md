@@ -27,8 +27,6 @@ The front-end uses **HTMX** for a responsive, interactive experience, allowing y
 ---
 
 ## Usage
-<img width="1916" height="911" alt="image" src="https://github.com/user-attachments/assets/bdf60450-d2eb-4dcb-ac3f-9a301a61b0ee" />
-## Usage
 
 1. Clone the repository:
 
@@ -48,5 +46,9 @@ The front-end uses **HTMX** for a responsive, interactive experience, allowing y
 * **Backend**: Spring Boot 3.4, Java 25
 * **AI Integration**: Spring AI Client Chat (Ollama)
 * **Frontend**: HTMX + Thymeleaf
+
+---
+
+<img width="1916" height="911" alt="image" src="https://github.com/user-attachments/assets/bdf60450-d2eb-4dcb-ac3f-9a301a61b0ee" />
 
 ---
