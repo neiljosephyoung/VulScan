@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>VulScan Analysis Results</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f8;
+            margin: 0;
+            padding: 2rem;
+            color: #333;
+        }
+
+        h2 {
+            color: #0b3d91;
+            margin-bottom: 1rem;
+        }
+
+        .file-section {
+            margin-bottom: 2rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1rem;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.75rem;
+        }
+
+        th {
+            background-color: #0b3d91;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e0ebff;
+        }
+
+        .empty-msg {
+            color: #666;
+            font-style: italic;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div th:fragment="resultFragment">
+    <h2>Analysis Results</h2>
+
+    <div th:if="${results.isEmpty()}" style="font-style: italic; color: #666;">
+        No issues found.
+    </div>
+
+    <!-- Expand/Collapse All Buttons -->
+    <div th:if="${!results.isEmpty()}" style="margin-bottom: 1rem;">
+        <button type="button" onclick="document.querySelectorAll('details').forEach(d => d.open=true)"
+                style="padding:0.4rem 0.8rem; margin-right:0.5rem; border-radius:6px; border:none; background:#0b3d91; color:#fff; cursor:pointer;">
+            Expand All
+        </button>
+        <button type="button" onclick="document.querySelectorAll('details').forEach(d => d.open=false)"
+                style="padding:0.4rem 0.8rem; border-radius:6px; border:none; background:#555; color:#fff; cursor:pointer;">
+            Collapse All
+        </button>
+    </div>
+
+    <div th:each="fileMap : ${results}">
+        <div th:each="entry : ${fileMap.entrySet()}"
+             style="margin-bottom: 1rem; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 0.5rem;">
+
+            <!-- File as collapsible summary -->
+            <details open>
+                <summary style="font-weight: bold; font-size: 1.1rem; cursor: pointer; color: #0b3d91; padding: 0.5rem;">
+                    <span th:text="'File: ' + ${entry.key}"></span>
+                </summary>
+
+                <!-- Findings -->
+                <div th:each="finding : ${entry.value}"
+                     style="border: 1px solid #ddd; border-radius: 8px; padding: 0.75rem; margin: 0.5rem 0; background: #f9f9f9;">
+                    <p><strong>Line:</strong> <span th:text="${finding.line}"></span></p>
+                    <p><strong>Issue:</strong> <span th:text="${finding.issue}"></span></p>
+                    <p><strong>Severity:</strong> <span th:text="${finding.severity}"></span></p>
+                    <p><strong>CVE:</strong> <span th:text="${finding.cve}"></span></p>
+                    <p><strong>CVSS:</strong> <span th:text="${finding.cvss}"></span></p>
+                    <p><strong>Recommendation:</strong> <span th:text="${finding.recommendation}"></span></p>
+                </div>
+            </details>
+
+        </div>
+    </div>
+</div>
+
+
+
+</body>
+</html>

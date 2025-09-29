@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>VulScan Analyzer</title>
+    <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f8;
+            margin: 0;
+            padding: 2rem;
+            color: #333;
+        }
+
+        h1 {
+            color: #0b3d91;
+            margin-bottom: 1.5rem;
+        }
+
+        form {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        label {
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        input[type="text"], select {
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            width: 300px;
+        }
+
+        button {
+            padding: 0.6rem 1.2rem;
+            background-color: #0b3d91;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #092c6a;
+        }
+
+        #loading {
+            border: 4px solid rgba(0,0,0,0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin-left: 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #results {
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+<h1>VulScan Analyzer</h1>
+<form hx-post="/analyze"
+      hx-target="#results"
+      hx-indicator="#loading"
+      hx-swap="innerHTML">
+    <label>Project Path:</label>
+    <input type="text" name="path" value="D:/OWASP/owasp-top10-lab/sql-injection-app">
+
+    <label>Model:</label>
+    <select name="model">
+        <option value="llama3">LLaMA3</option>
+        <option value="other-model">Other</option>
+    </select>
+
+    <button type="submit">Analyze</button>
+    <div id="loading"></div>
+</form>
+
+<div id="results"></div>
+
+<!-- HTMX spinner script -->
+<script>
+    const loading = document.querySelector('#loading');
+
+    // Show spinner before any request
+    document.body.addEventListener('htmx:beforeRequest', function(evt){
+        if (loading) loading.style.display = 'inline-block';
+    });
+
+    // Hide spinner after request completes
+    document.body.addEventListener('htmx:afterRequest', function(evt){
+        if (loading) loading.style.display = 'none';
+    });
+
+    // Hide spinner on network errors
+    document.body.addEventListener('htmx:responseError', function(evt){
+        if (loading) loading.style.display = 'none';
+    });
+</script>
+</body>
+</html>
